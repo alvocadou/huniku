@@ -62,6 +62,7 @@ class AuthController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'user_type' => 'pembeli',
         ]);
 
         Auth::login($user);

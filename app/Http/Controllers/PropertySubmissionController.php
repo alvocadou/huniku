@@ -11,11 +11,17 @@ class PropertySubmissionController extends Controller
 {
     public function create()
     {
+        if (! auth()->user()->isVerifiedDeveloper()) {
+            return view('submit.blocked');
+        }
+
         return view('submit.create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->isVerifiedDeveloper(), 403, 'Cuma developer terverifikasi yang bisa daftarkan properti.');
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'type' => ['required', 'in:rumah,kost,kontrakan,apartemen'],

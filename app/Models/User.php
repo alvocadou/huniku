@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -16,6 +15,13 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'user_type',
+        'company_name',
+        'phone',
+        'whatsapp',
+        'instagram',
+        'developer_status',
+        'developer_rejection_reason',
     ];
 
     protected $hidden = [
@@ -40,5 +46,30 @@ class User extends Authenticatable
     public function favoriteListings()
     {
         return $this->belongsToMany(Listing::class, 'favorites')->withTimestamps();
+    }
+
+    public function listings()
+    {
+        return $this->hasMany(Listing::class, 'submitted_by');
+    }
+
+    public function isDeveloper(): bool
+    {
+        return $this->user_type === 'developer';
+    }
+
+    public function isVerifiedDeveloper(): bool
+    {
+        return $this->isDeveloper() && $this->developer_status === 'verified';
+    }
+
+    public function isPendingDeveloper(): bool
+    {
+        return $this->isDeveloper() && $this->developer_status === 'pending';
+    }
+
+    public function isRejectedDeveloper(): bool
+    {
+        return $this->isDeveloper() && $this->developer_status === 'rejected';
     }
 }

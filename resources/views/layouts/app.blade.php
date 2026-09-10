@@ -70,12 +70,41 @@
   html[data-theme="dark"] .theme-toggle .icon-moon{display:block;}
 
   nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);transition:background-color .25s ease, border-color .25s ease;}
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:18px 0;}
-  .logo{display:flex;align-items:center;gap:10px;font-family:'Sora',sans-serif;font-weight:700;font-size:20px;}
-  .nav-links{display:flex;gap:32px;font-size:15px;font-weight:500;color:var(--text-soft);}
+  .nav-inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:18px 0;gap:16px;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Sora',sans-serif;font-weight:700;font-size:20px;justify-self:start;}
+  .nav-links{display:flex;gap:32px;font-size:15px;font-weight:500;color:var(--text-soft);justify-self:center;white-space:nowrap;}
   .nav-links a:hover{color:var(--text);}
-  .nav-actions{display:flex;align-items:center;gap:14px;}
-  @media(max-width:860px){.nav-links{display:none;}}
+  .nav-actions{display:flex;align-items:center;justify-self:end;}
+  @media(max-width:860px){.nav-links{display:none;}.nav-inner{grid-template-columns:auto 1fr auto;}}
+
+  /* kebab (titik tiga) dropdown menu di navbar */
+  .kebab-wrap{position:relative;}
+  .kebab-btn{
+    width:40px;height:40px;border-radius:100px;border:1px solid var(--border);background:transparent;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);
+  }
+  .kebab-btn:hover{background:var(--hover-tint);}
+  .kebab-btn svg{width:18px;height:18px;}
+  .kebab-menu{
+    position:absolute;top:calc(100% + 10px);right:0;min-width:220px;z-index:70;
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    box-shadow:0 20px 40px -18px rgba(0,0,0,0.35);padding:8px;
+    opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .15s ease, transform .15s ease;
+  }
+  .kebab-wrap.open .kebab-menu{opacity:1;pointer-events:auto;transform:translateY(0);}
+  .kebab-item{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    padding:10px 12px;border-radius:10px;font-size:14px;font-weight:600;color:var(--text);
+    background:none;border:none;cursor:pointer;font-family:'Manrope',sans-serif;
+  }
+  .kebab-item:hover{background:var(--hover-tint);}
+  .kebab-item svg{width:16px;height:16px;flex-shrink:0;}
+  .kebab-item .icon-moon{display:none;}
+  html[data-theme="dark"] .kebab-item .icon-sun{display:none;}
+  html[data-theme="dark"] .kebab-item .icon-moon{display:block;}
+  .kebab-item-accent{color:var(--teal);}
+  .kebab-item-danger{color:#C24545;}
+  .kebab-divider{height:1px;background:var(--border);margin:6px 4px;}
 
   .tag{display:inline-block;font-size:11px;font-weight:700;padding:5px 10px;border-radius:100px;background:var(--teal-soft);color:var(--accent-text);margin-bottom:12px;}
   .sale-badge{position:absolute;top:14px;right:14px;background:var(--ink);color:var(--cream);font-size:11px;font-weight:700;padding:6px 12px;border-radius:100px;}
@@ -190,24 +219,38 @@
       <a href="{{ route('submit.create') }}">Daftarkan Properti</a>
     </div>
     <div class="nav-actions">
-      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Ganti tema terang/gelap">
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-      </button>
-      @auth
-        <a href="{{ route('submit.index') }}" class="btn btn-ghost" style="padding:10px 20px;font-size:14px;">Listing Saya</a>
-        <a href="{{ route('favorites.index') }}" class="btn btn-ghost" style="padding:10px 20px;font-size:14px;">Favorit</a>
-        @if (auth()->user()->is_admin)
-          <a href="{{ route('admin.listings.index') }}" class="btn btn-ghost" style="padding:10px 20px;font-size:14px;">Kelola Listing</a>
-        @endif
-        <form action="{{ route('logout') }}" method="POST" style="margin:0;">
-          @csrf
-          <button type="submit" class="btn btn-primary" style="padding:10px 20px;font-size:14px;">Keluar</button>
-        </form>
-      @else
-        <a href="{{ route('login') }}" class="btn btn-ghost" style="padding:10px 20px;font-size:14px;">Masuk</a>
-        <a href="{{ route('register') }}" class="btn btn-primary" style="padding:10px 20px;font-size:14px;">Daftar</a>
-      @endauth
+      <div class="kebab-wrap" id="navKebab">
+        <button type="button" class="kebab-btn" onclick="document.getElementById('navKebab').classList.toggle('open')" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+        </button>
+        <div class="kebab-menu">
+          <button type="button" class="kebab-item" onclick="toggleTheme()">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+            <span>Ganti Tema</span>
+          </button>
+          @auth
+            <a href="{{ route('profile.edit') }}" class="kebab-item">Profil Saya</a>
+            @if (auth()->user()->isDeveloper())
+              <a href="{{ route('submit.index') }}" class="kebab-item">Listing Saya</a>
+            @endif
+            <a href="{{ route('favorites.index') }}" class="kebab-item">Favorit</a>
+            @if (auth()->user()->is_admin)
+              <a href="{{ route('admin.listings.index') }}" class="kebab-item">Kelola Listing</a>
+              <a href="{{ route('admin.developers.index') }}" class="kebab-item">Kelola Developer</a>
+            @endif
+            <div class="kebab-divider"></div>
+            <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+              @csrf
+              <button type="submit" class="kebab-item kebab-item-danger">Keluar</button>
+            </form>
+          @else
+            <a href="{{ route('login') }}" class="kebab-item">Masuk</a>
+            <a href="{{ route('register') }}" class="kebab-item kebab-item-accent">Daftar</a>
+          @endauth
+        </div>
+      </div>
+    </div>
     </div>
   </div>
 </nav>
@@ -385,6 +428,13 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () { enhanceSelects(); });
+
+  document.addEventListener('click', function (e) {
+    var kebab = document.getElementById('navKebab');
+    if (kebab && !kebab.contains(e.target)) {
+      kebab.classList.remove('open');
+    }
+  });
 
   function toggleFavorite(btn, listingId, isGuest) {
     if (isGuest) {

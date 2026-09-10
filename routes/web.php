@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\Admin\ListingManageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertySubmissionController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,10 +27,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/daftarkan-properti', [PropertySubmissionController::class, 'create'])->name('submit.create');
     Route::post('/daftarkan-properti', [PropertySubmissionController::class, 'store'])->name('submit.store');
     Route::get('/listing-saya', [PropertySubmissionController::class, 'index'])->name('submit.index');
+
+    Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profil/jadi-developer', [ProfileController::class, 'becomeDeveloperForm'])->name('profile.become-developer');
+    Route::post('/profil/jadi-developer', [ProfileController::class, 'becomeDeveloper'])->name('profile.become-developer.store');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('listings', ListingManageController::class)->except(['show']);
     Route::post('listings/{listing}/approve', [ListingManageController::class, 'approve'])->name('listings.approve');
     Route::post('listings/{listing}/reject', [ListingManageController::class, 'reject'])->name('listings.reject');
+
+    Route::get('developers', [DeveloperController::class, 'index'])->name('developers.index');
+    Route::get('developers/{user}', [DeveloperController::class, 'show'])->name('developers.show');
+    Route::post('developers/{user}/verify', [DeveloperController::class, 'verify'])->name('developers.verify');
+    Route::post('developers/{user}/reject', [DeveloperController::class, 'reject'])->name('developers.reject');
 });
